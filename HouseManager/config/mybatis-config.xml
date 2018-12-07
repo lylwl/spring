@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- 引入数据库参数配置文件 -->
+	<properties resource="mysqldb.properties" />
+	
+	<!-- 设置mybatis的运行行为 -->
+	<settings>
+		<!--日志的实现  -->
+<!-- 	<setting name="logImpl" value="LOG4J" /> -->
+ <setting name="logImpl" value="STDOUT_LOGGING" />  
+ 
+		<!-- 设置主键自增 -->
+		<setting name="useGeneratedKeys" value="true"/>
+		
+		<!--自动映射  -->
+		
+		<setting name="autoMappingBehavior" value="FULL"/>
+	</settings>
+	
+	
+	
+	<!--取别名  -->
+	<typeAliases>
+		<package name="com.pojo"/>
+	</typeAliases>
+	
+	<plugins>
+		<plugin interceptor="com.github.pagehelper.PageHelper">
+		
+			<!--pageSize=0,相当于没有执行分页，返回值仍是Page  -->
+			<property name="pageSizeZero" value="true" />
+			<!--合理化设置，pageIndex<0||pageIndex>totatCount。自动查询第一页或是最后一页 -->
+			<property name="reasonable" value="true" />
+
+
+		</plugin>
+	</plugins>
+	<!--运行环境 -->
+	<environments default="development">
+		<!-- 其中之一：开发环境 -->
+		<environment id="development">
+			<!--使用事务：JDBC -->
+			<transactionManager type="JDBC" />
+			<!--数据源：池的概念 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}" />
+				<property name="url" value="${jdbc.url}" />
+				<property name="username" value="${jdbc.username}" />
+				<property name="password" value="${jdbc.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- 映射器：告诉mybatis去哪里找sql-->
+	<mappers>             
+		<!--告诉具体sql映射文件  -->
+		<package name="com.dao"/>
+	</mappers>
+
+</configuration>

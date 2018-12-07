@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.HouseListMapper">
+
+<sql id="sqlwhere">
+<trim prefix="where" prefixOverrides="and ||or">
+			<if test="userName!=null and userName!=''">
+				and userName=#{userName}
+			</if>
+			<if test="topic!=null and topic!=''">
+				and topic like concat('%',#{topic},'%')
+			</if>
+			<if test="contents!=null and contents!=''">
+				and contents=#{contents}
+			</if>
+			<if test="price!=0 and price!=null">
+				and price BETWEEN #{price}
+			</if>
+			<if test="pnum!=0 and pnum!=null">
+				 AND #{pnum}
+			</if>
+			<if test="area!=0 and area!=null">
+				and area BETWEEN #{area}
+			</if>
+				<if test="anum!=0 and anum!=null">
+				 AND #{anum}
+			</if>
+			<if test="htname!=null and htname!=''">
+				and htname=#{htname}
+			</if>
+			<if test="dname!=null and dname!=''">
+				and dname=#{dname}
+			</if>
+			<if test="sname!=null and sname!=''">
+				and sname=#{sname}
+			</if>
+			<if test="phone!=null and phone!=''">
+				and phone=#{phone}
+			</if>
+			<if test="hmid!=null and hmid!=''">
+				and hmid=#{hmid}
+			</if>
+			<if test="htid!=0 and htid!=null">
+				and a.htid=#{htid}
+			</if>
+			<if test="sid!=0 and sid!=null">
+				and a.sid=#{sid}
+			</if>
+				<if test="did!=0 and did!=null">
+				and did=#{did}
+			</if>
+			</trim>
+</sql> 
+<sql id="upd">
+<trim prefix="set" prefixOverrides=",">
+			<if test="topic!=null and topic!=''">
+				, topic =#{topic}
+			</if>
+			<if test="sid!=0 and sid!=null">
+				, sid=#{sid}
+			</if>
+			<if test="htid!=0 and htid!=null">
+				, htid=#{htid}
+			</if>
+			<if test="price!=0 and price!=null">
+				, price=#{price}
+			</if>
+			<if test="area!=0 and area!=null">
+				, area=#{area}
+			</if>
+			<if test="contents!=null and contents!=''">
+				, contents=#{contents}
+			</if>
+			<if test="htime!=null and htime!=''">
+				,htime=#{htime}
+			</if>
+			<if test="username!=null and username!=''">
+				,username=#{username}
+			</if>
+</trim>
+</sql>
+<sql id="hmid">
+ and hmid=#{hmid}
+ 			<if test="userName!=null and userName!=''">
+				and userName=#{userName}
+			</if>
+</sql>
+<sql id="swhere">
+	and a.htid=b.htid AND c.did=d.sdid AND a.sid=d.sid AND e.uid=a.uid 
+</sql>
+<sql id="sel">
+	SELECT a.topic,a.htime,a.hmid,a.contents,a.area,a.price,b.htid,b.htname,c.dname,c.did,d.sname,d.sid,e.phone
+FROM hos_house AS a,hos_type AS b,hos_district AS c,hos_street AS d,`sys_user` AS e
+</sql>      
+<!--自定义映射视图  -->
+		<resultMap type="House" id="HouseMap">
+			<id column="hmid" property="hmid"/>
+			<result column="topic" property="topic"/>
+			<association property="dis" javaType="HouseDistrice">
+				<id column="did" property="did"/>
+				<result column="dname" property="dname"/>
+			</association>
+			<association property="str" javaType="HouseStreet">
+				<id column="sdid" property="sdid"/>
+				<result column="sname" property="sname"/>
+			</association>
+			<association property="user" javaType="User">
+				<id column="uid" property="uid"/>
+				<result column="phone" property="phone"/>
+			</association>
+			<association property="type" javaType="HouseType">
+				<id column="htid" property="htid"/>
+				<result column="htName" property="htName"/>
+			</association>
+	</resultMap>
+	<!-- 查询全部的房屋信息 -->
+	<select id="getHouseWhere" resultMap="HouseMap" parameterType="map">
+	<include refid="sel"></include>
+	<include refid="sqlwhere"></include>
+	<include refid="swhere"></include>
+	</select>
+	<!-- 根据id查询房屋信息 -->
+	<select id="getHouseById" resultMap="HouseMap" parameterType="map">
+	<include refid="sel"></include>
+	<include refid="sqlwhere"></include>
+	<include refid="swhere"></include>
+	</select>
+	<!-- 根据id删除房屋信息 -->
+	<delete id="deleteById">
+	DELETE from `hos_house` WHERE `hmid`=#{hmid}
+	</delete>
+	<!-- 修改房屋信息 -->
+	<update id="updateHouse" parameterType="House">
+	UPDATE `hos_house` 
+	SET `sid`=#{sid},`htid`=#{htid},`price`=#{price},`topic`=#{topic},`contents`=#{contents},`htime`=#{htime},`area`=#{area} 
+	WHERE `uid`=#{uid} and hmid=#{hmid}
+	</update>
+	<!-- 查询所有区县 -->
+	<select id="getAllDname" resultType="HouseDistrice">
+		SELECT * FROM `hos_district`
+	</select>
+	<!-- 根据区县id查询街道 -->
+	<select id="getStreet" resultType="HouseStreet">
+		SELECT b.sid,b.sname,b.sdid
+		FROM `hos_district` a,`hos_street` b
+		WHERE a.did=b.sdid AND a.did=#{did}
+	</select>
+	<!-- 查询房屋类型 -->
+	<select id="getType" resultType="HouseType">
+		SELECT htid,htname FROM `hos_type`
+	</select>
+	<!-- 新增房屋信息 -->
+	<insert id="addHouse" parameterType="House">
+		INSERT  INTO `hos_house`(`hmid`,`uid`,`sid`,`htid`,`price`,`topic`,`contents`,`htime`,`area`) 
+		VALUES (0,#{uid},#{sid},#{htid},#{price},#{topic},#{contents},#{htime},#{area})
+	</insert>
+	
+</mapper>
+
+
+
+
+
